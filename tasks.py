@@ -1,6 +1,6 @@
 import argparse, types, json, jsonschema, random, smtplib
 from functools import wraps
-from time import sleep
+from time import sleep, time
 from multiprocessing import Process, Queue, current_process
 from config import *
 from email.mime.text import MIMEText
@@ -36,7 +36,7 @@ def home():
             json_user_task = json.loads(user_task)
             f = get_func(json_user_task['task_name'])
             try:
-                q.put(json_user_task['params'])
+                q.put(json_user_task)
                 f_proc = Process(target=f, kwargs=q.get())
                 f_proc.start()
             except (jsonschema.ValidationError, KeyError, ValueError):
@@ -50,8 +50,17 @@ def task(name, json_schema):
     def dec(real_func):
         @wraps(real_func)
         def wrapper(*args, **kwargs):
+            if 'params' in kwargs:
+                kwargs = kwargs['params']
             jsonschema.validate(kwargs, json_schema)
-            return real_func(*args, **kwargs)
+            print json.dumps({"status": "OK"})
+            time_before = time()
+            result = real_func(*args, **kwargs)
+            time_after = time()
+            if 'email' in kwargs:
+                send_email(kwargs['email'], time_before, time_after, result, name)
+                print json.dumps({"msg": "explanatory letter was sent to specified email"})
+            return result
         wrapper.__name__ = name
         return wrapper
     return dec
@@ -66,6 +75,7 @@ def task(name, json_schema):
 def multi_print(msg, count):
     sleep(random.randint(5, 9))
     print current_process()
+    print '\n'.join(msg for _ in xrange(count))
     return '\n'.join(msg for _ in xrange(count))
 
 
