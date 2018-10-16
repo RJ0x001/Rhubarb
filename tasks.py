@@ -5,6 +5,7 @@ from multiprocessing import Process, Queue, current_process
 from config import *
 from email.mime.text import MIMEText
 from email_test import *
+from config import *
 
 
 def send_email(email, time_before, time_after, result, name):
@@ -12,7 +13,10 @@ def send_email(email, time_before, time_after, result, name):
                        (name, result, (time_after - time_before)))
     msg['Subject'] = 'Function %r have completed.' % name
     s = smtplib.SMTP_SSL(smtp_server)
-    s.login(me, my_pass)
+    try:
+        s.login(me, my_pass)
+    except:
+        print 'Email login fault'
     msg['From'] = me
     msg['To'] = email
     s.sendmail(me, email, msg.as_string())
@@ -50,16 +54,29 @@ def task(name, json_schema):
     def dec(real_func):
         @wraps(real_func)
         def wrapper(*args, **kwargs):
+            if 'email' in kwargs:
+                email = kwargs['email']
+            else:
+                email = None
             if 'params' in kwargs:
                 kwargs = kwargs['params']
             jsonschema.validate(kwargs, json_schema)
             print json.dumps({"status": "OK"})
+            session.add(Tasks(params=str(kwargs), mail=email, task_name=name))
+            session.commit()
+            row_id = session.query(Tasks.id).order_by(Tasks.id.desc()).first()
             time_before = time()
             result = real_func(*args, **kwargs)
             time_after = time()
-            if 'email' in kwargs:
-                send_email(kwargs['email'], time_before, time_after, result, name)
+            if email:
+                send_email(email, time_before, time_after, result, name)
                 print json.dumps({"msg": "explanatory letter was sent to specified email"})
+            session.query(Tasks).filter(Tasks.id == row_id[0]). \
+                update({Tasks.done: 1,
+                        Tasks.time_execute: time_after - time_before,
+                        Tasks.result: unicode(str(result), )
+                        })
+            session.commit()
             return result
         wrapper.__name__ = name
         return wrapper
@@ -74,8 +91,6 @@ def task(name, json_schema):
                          'required': ['msg']})
 def multi_print(msg, count):
     sleep(random.randint(5, 9))
-    print current_process()
-    print '\n'.join(msg for _ in xrange(count))
     return '\n'.join(msg for _ in xrange(count))
 
 

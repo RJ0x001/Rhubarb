@@ -1,6 +1,5 @@
-me = 'redjin@list.ru'
-my_pass = ''
-#you = 'artem.e.pavlenko@gmail.com'
-smtp_server = 'smtp.mail.ru'
+me = 'info.rhubarb@yandex.ru'
+my_pass = 'ucantguess'
+smtp_server = 'smtp.yandex.ru'
 
 

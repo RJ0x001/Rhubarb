@@ -20,9 +20,12 @@ class Tasks(Base):
     done = Column(Boolean, default=False)
     params = Column(String)
     result = Column(String)
+    task_name = Column(String)
 
-    def __init__(self, params, mail=None):
+    def __init__(self, params, mail, task_name):
         self.params = params
+        self.mail = mail
+        self.task_name = task_name
 
 
 func_map = {'multiprint': 'multi_print',
