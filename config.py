@@ -11,6 +11,7 @@ Session.configure(bind=engine)
 Base = declarative_base()
 session = Session()
 
+
 class Tasks(Base):
     __tablename__ = 'tasks'
     id = Column(Integer, primary_key=True, autoincrement=True)

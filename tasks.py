@@ -4,19 +4,20 @@ from time import sleep, time
 from multiprocessing import Process, Queue, current_process
 from config import *
 from email.mime.text import MIMEText
-from email_test import *
+from email_params import *
 from config import *
 
 
 def send_email(email, time_before, time_after, result, name):
+    '''
+    Send email to user
+
+    '''
     msg = MIMEText('Function %r have completed. Result: %r. Execution time: %s' %
                        (name, result, (time_after - time_before)))
     msg['Subject'] = 'Function %r have completed.' % name
     s = smtplib.SMTP_SSL(smtp_server)
-    try:
-        s.login(me, my_pass)
-    except:
-        print 'Email login fault'
+    s.login(me, my_pass)
     msg['From'] = me
     msg['To'] = email
     s.sendmail(me, email, msg.as_string())
@@ -24,6 +25,10 @@ def send_email(email, time_before, time_after, result, name):
 
 
 def get_func(task_type):
+    '''
+    :param task_type: user task name
+    :return: decorated function
+    '''
     for name, obj in list(globals().items()):
         if isinstance(obj, types.FunctionType) and obj.__name__ == task_type:
             true_func_str = name
@@ -33,6 +38,11 @@ def get_func(task_type):
 
 @app.route('/', methods=['GET', 'POST'])
 def home():
+    '''
+    Flask main page.
+    Taking task from users
+    :return:
+    '''
     if request.method == 'POST':
         q = Queue()
         user_task = str(request.form.get('task'))
@@ -51,6 +61,12 @@ def home():
 
 
 def task(name, json_schema):
+    '''
+    Decorator to executing functions. Validate user parameters, adding data to database
+    :param name: task name
+    :param json_schema: schema to validation user's parameters
+    :return: result of function execute
+    '''
     def dec(real_func):
         @wraps(real_func)
         def wrapper(*args, **kwargs):
@@ -90,7 +106,9 @@ def task(name, json_schema):
                          },
                          'required': ['msg']})
 def multi_print(msg, count):
-    sleep(random.randint(5, 9))
+    '''
+    Test function to making tasks
+    '''
     return '\n'.join(msg for _ in xrange(count))
 
 
@@ -102,10 +120,16 @@ def multi_print(msg, count):
                     },
                     'required': ['operands']})
 def run(operands):
+    '''
+    Test function to making tasks
+    '''
     return reduce(lambda x, y: x * y, operands)
 
 
 def run_cli():
+    '''
+    Taking parameters from cli, then run flask server or executing function
+    '''
     parser = argparse.ArgumentParser()
     parser.add_argument('--params')
     parser.add_argument('t_type')
@@ -117,8 +141,3 @@ def run_cli():
         task_type = args.t_type
         f = get_func(task_type)
         f(**json_params)
-
-
-if __name__ == '__main__':
-    run_cli()
-
