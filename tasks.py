@@ -60,7 +60,7 @@ def home():
     return render_template('home.html')
 
 
-def task(name, json_schema):
+def task(name, json_schema=None):
     '''
     Decorator to executing functions. Validate user parameters, adding data to database
     :param name: task name
@@ -76,7 +76,8 @@ def task(name, json_schema):
                 email = None
             if 'params' in kwargs:
                 kwargs = kwargs['params']
-            jsonschema.validate(kwargs, json_schema)
+            if json_schema:
+                jsonschema.validate(kwargs, json_schema)
             print json.dumps({"status": "OK"})
             session.add(Tasks(params=str(kwargs), mail=email, task_name=name))
             session.commit()
@@ -112,18 +113,12 @@ def multi_print(msg, count):
     return '\n'.join(msg for _ in xrange(count))
 
 
-@task(name='mult', json_schema={'type': 'object',
-                   'properties': {
-                       'operands': {'type': 'array',
-                                    'minItems': 1,
-                                    'items': {'type': 'number'}}
-                    },
-                    'required': ['operands']})
+@task(name='mult')
 def run(operands):
     '''
     Test function to making tasks
     '''
-    return reduce(lambda x, y: x * y, operands)
+    print reduce(lambda x, y: x * y, operands)
 
 
 def run_cli():
