@@ -29,9 +29,6 @@ class Tasks(Base):
         self.task_name = task_name
 
 
-func_map = {'multiprint': 'multi_print',
-            'mult': 'mult'}
-
 Base.metadata.create_all(engine)
 
 
