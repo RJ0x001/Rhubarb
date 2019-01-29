@@ -3,6 +3,7 @@ import types
 import json
 from functools import wraps
 
+MAPPING_DICT = {}
 
 def task_deco(name):
     def dec(real_func):
@@ -10,7 +11,7 @@ def task_deco(name):
         def wrapper(*args, **kwargs):
             result = real_func(*args, **kwargs)
             return result
-        globals()[name] = wrapper
+        MAPPING_DICT[name] = wrapper
         return wrapper
     return dec
 
@@ -20,7 +21,7 @@ class BaseTask(object):
 
 
 def get_task(task):
-    for name, obj in globals().items():
+    for name, obj in MAPPING_DICT.items():
         if isinstance(obj, types.FunctionType) and name == task:
             return obj
     for cls in list(BaseTask.__subclasses__()):
