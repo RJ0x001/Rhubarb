@@ -11,8 +11,8 @@ from random import randint
                               },
                               'required': ['msg']})
 def multi_print(msg, count=2):
-    sleep(randint(3, 9))
-    print '\n'.join(msg for _ in xrange(count))
+    sleep(randint(1, 2))
+    return '\n'.join(msg for _ in xrange(count))
 
 
 @tasks.task_deco(name='greet')

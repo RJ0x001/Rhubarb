@@ -79,12 +79,18 @@ def get_task(task, json_params):
         else:
             t = MAPPING_DICT[task]
         if isinstance(t, types.FunctionType):
-            return t(**json_params)
+            r = t(**json_params)
+            print json.dumps({"result": r})
+            return json.dumps({"result": r})
+            # return r
         else:
             if hasattr(t, 'run') and callable(t.run):
                 if hasattr(t, 'json_schema'):
                     check_json_schema(json_params, t.json_schema)
-                return t().run(**json_params)
+                r = t().run(**json_params)
+                print json.dumps({"result": r})
+                return json.dumps({"result": r})
+                # return r
             else:
                 raise ValueError('Child class should have run() method')
     except UnboundLocalError:
@@ -101,6 +107,6 @@ def run_cli():
         app.run()
 
     json_params = json.loads(args.params)
-    return get_task(args.t_type, json_params)
+    return json.loads(get_task(args.t_type, json_params))['result']
 
 
