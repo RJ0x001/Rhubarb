@@ -1,4 +1,6 @@
 import tasks
+from time import sleep, time
+from random import randint
 
 
 @tasks.task_deco(name='multiprint',
@@ -9,12 +11,13 @@ import tasks
                               },
                               'required': ['msg']})
 def multi_print(msg, count=2):
-    return '\n'.join(msg for _ in xrange(count))
+    sleep(randint(3, 9))
+    print '\n'.join(msg for _ in xrange(count))
 
 
 @tasks.task_deco(name='greet')
 def greetings(name):
-    return 'Hello, ' + name
+    print 'Hello, ' + name
 
 
 class Multiply(tasks.BaseTask):
@@ -28,14 +31,15 @@ class Multiply(tasks.BaseTask):
                    'required': ['operands']}
 
     def run(self, operands):
-        return reduce(lambda x, y: x * y, operands)
+        sleep(randint(3, 9))
+        print reduce(lambda x, y: x * y, operands)
 
 
 class Summa(tasks.BaseTask):
     name = 'sum'
 
     def run(self, operands):
-        return reduce(lambda x, y: x + y, operands)
+        print reduce(lambda x, y: x + y, operands)
 
 
 if __name__ == '__main__':
